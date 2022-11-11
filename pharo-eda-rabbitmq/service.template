@@ -1,0 +1,149 @@
+#!/usr/bin/env dry-wit
+# (c) 2022-today Automated Computing Machinery, S.L.
+#
+#    This file is part of pharo-eda-docker-images.
+#
+#    pharo-eda-docker-images is free software: you can redistribute it and/or
+#    modify it under the terms of the GNU General Public License as published
+#    by the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    pharo-eda-docker-images is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with pharo-eda-docker-images.
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+# mod: pharo-eda-rabbitmq/service
+# api: public
+# txt: Launches RabbitMQ.
+
+export DW_DISABLE_ANSI_COLORS=TRUE
+
+setDebugEnabled
+
+# fun: main
+# api: public
+# txt: Launches RabbitMQ.
+# txt: Returns 0/TRUE always.
+# use: main;
+function main() {
+  chown -R ${SERVICE_USER}:${SERVICE_GROUP} "${DATA_FOLDER}"
+
+  configure_bootstrap
+
+  enable_builtin_changesets
+
+  tail_log_files "${RABBITMQ_LOG_FOLDER}"
+
+  run_rabbitmq_server
+}
+
+# fun: configure_bootstrap
+# api: public
+# txt: Configures the RabbitMQ bootstrap process.
+# txt: Returns 0/TRUE always.
+# use: configure_bootstrap;
+function configure_bootstrap() {
+  cat <<EOF >/usr/local/bin/${IMAGE}-bootstrap.inc.sh
+# env: ADMIN_USER_PASSWORD: The password of the admin user.
+defineEnvVar ADMIN_USER_PASSWORD MANDATORY "Tthe password of the admin user" "${ADMIN_USER_PASSWORD}";
+# env: MONITORING_USER_PASSWORD: The password of the monitoring user.
+defineEnvVar MONITORING_USER_PASSWORD MANDATORY "The password of the monitoring user" "${MONITORING_USER_PASSWORD}";
+# vim: syntax=sh ts=2 sw=2 sts=4 sr noet
+EOF
+}
+
+# fun: enable_builtin_changesets
+# api: public
+# txt: Enables the built-in changesets.
+# txt: Returns 0/TRUE if the built-in changesets could be enabled; 1/FALSE otherwise.
+# use: if enable_builtin_changesets; then
+# use:   echo "Built-in changesets enabled";
+# use: fi
+function enable_builtin_changesets() {
+
+  chmod +x /var/local/src/rabbitmq/*.sh
+  rsync -avz /var/local/src/rabbitmq/* "${CHANGESET_MONITORING_FOLDER}"/
+
+  cat <<EOF >>/usr/local/sbin/pending_rabbitmq_scripts.inc.sh
+# env: FORMSERVICE_USER_PASSWORD: The password of the FormsService user.
+defineEnvVar FORMSERVICE_USER_PASSWORD MANDATORY "The password of the FormService user" "${FORMSERVICE_USER_PASSWORD}";
+# vim: syntax=sh ts=2 sw=2 sts=4 sr noet
+EOF
+}
+
+# fun: tail_log_files folder
+# api: public
+# txt: Launches a tail -f on every log file, and disowns the tail process.
+# txt: Returns 0/TRUE always.
+# use: tail_log_files /var/log/rabbitmq;
+function tail_log_files() {
+  local _folder="${1}"
+  checkNotEmpty folder "${_folder}" 1
+
+  local _oldIFS="${IFS}"
+  local _f
+
+  mkdir -p "${_folder}"
+  IFS="${DWIFS}"
+  for _f in ${IMAGE}.log ${IMAGE}_upgrade.log startup_err startup_log changesets.log; do
+    IFS="${_oldIFS}"
+    touch "${_folder}"/${_f}
+    chown ${SERVICE_USER}:${SERVICE_GROUP} "${_folder}"/${_f}
+  done
+  IFS="${_oldIFS}"
+
+  chown -R ${SERVICE_USER}:${SERVICE_GROUP} "${_folder}"
+
+  IFS="${DWIFS}"
+  for _f in "${_folder}"/*.log; do
+    IFS="${_oldIFS}"
+    tail -f "${_f}" &
+    disown
+  done
+  IFS="${_oldIFS}"
+}
+
+# fun: run_rabbitmq_server
+# api: public
+# txt: Runs the RabbitMQ server.
+# txt: It runs the server in foreground. It returns the return code of the server process.
+# use: if run_rabbitmq_server; then
+# use:   echo "RabbitMQ terminated with $?";
+# use: fi
+function run_rabbitmq_server() {
+  local _exports="$(export)"
+
+  cat <<EOF >/tmp/runme
+#!/bin/bash
+
+${_exports}
+declare -x HOME="${SERVICE_USER_HOME}"
+export PATH=/usr/sbin:${PATH}
+ulimit -n ${RABBITMQ_ULIMIT_N}
+rabbitmq-server $@
+# vim: syntax=sh ts=4 sw=4 sts=4 sr noet
+EOF
+
+  chmod +x /tmp/runme
+
+  chpst -u ${SERVICE_USER}:${SERVICE_GROUP} -U ${SERVICE_USER}:${SERVICE_GROUP} /tmp/runme
+}
+
+# Script metadata
+setScriptDescription "Launches RabbitMQ"
+
+# These environment variables can be overridden in a .inc.sh file in current folder.
+
+# env: DATA_FOLDER: The data folder.
+defineEnvVar DATAB_FOLDER MANDATORY "The data folder" "/data"
+# env: RABBITMQ_LOG_FOLDER The RabbitMQ log folder. Defaults to /var/log/rabbitmq.
+defineEnvVar RABBITMQ_LOG_FOLDER MANDATORY "The RabbitMQ log folder" "/var/log/rabbitmq"
+# env: CHANGESET_MONITORING_FOLDER: The folder to monitor for changesets.
+defineEnvVar CHANGESET_MONITORING_FOLDER MANDATORY "The folder to monitor for changesets" "/backup/rabbitmq/changesets"
+
+# vim: syntax=sh ts=4 sw=4 sts=4 sr noet

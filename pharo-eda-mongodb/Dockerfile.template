@@ -1,0 +1,28 @@
+@include("preamble")
+FROM ${BASE_IMAGE}:${PARENT_IMAGE_TAG}
+@include("maintainer")
+
+@include("addon-toggles")
+
+@include("service_user")
+@include("mongodb")
+
+ENV DOBACKUP="true" \
+    BACKUP_HOST_SSH_PORT="22" \
+    ADMIN_USER_NAME="${ADMIN_USER_NAME}" \
+    BACKUP_USER_NAME="${BACKUP_USER_NAME}"
+
+COPY bootstrap.sh /usr/local/bin/${IMAGE}-bootstrap.sh
+# COPY generic-eventstore-client.sh /usr/local/bin/generic-eventstore-client.sh
+COPY generic-projections-client.sh /usr/local/bin/generic-projections-client.sh
+COPY check_input.sh /etc/my_init.d/00_check_input.sh
+COPY mongodb-files/service /etc/service/mongodb/run
+
+RUN chmod +x /etc/service/mongodb/run && \
+    chmod +x /usr/local/bin/${IMAGE}-bootstrap.sh
+
+VOLUME [ "/backup/mongodb/db", "/backup/mongodb/dumps", "/backup/mongodb/changesets" ]
+
+@include("copy-metadata")
+@include("symlinks")
+@include("instructions")

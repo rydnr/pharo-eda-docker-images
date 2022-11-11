@@ -1,0 +1,13 @@
+.build.inc.sh
+**/build.log
+**/.builds
+.build.sh.*
+**/copyright-preamble.txt
+**/Dockerfile
+**/LICENSE
+**/mongodb-files
+pharo-eda-mongodb/create_bootstrap_cron_job.sh
+pharo-eda-rabbitmq/check_input.sh
+pharo-eda-rabbitmq/service
+**/rabbitmq-files
+**/README

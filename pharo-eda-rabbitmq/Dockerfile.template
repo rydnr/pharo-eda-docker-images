@@ -1,0 +1,33 @@
+@include("preamble")
+FROM ${BASE_IMAGE}:${PARENT_IMAGE_TAG}
+@include("maintainer")
+
+@include("addon-toggles")
+
+@include("service_user")
+@include("rabbitmq")
+
+ENV RABBITMQ_NODENAME=${IMAGE} \
+    ADMIN_USER_PASSWORD="" \
+    MONITORING_USER_PASSWORD="" \
+    CHANGESET_MONITORING_INTERVAL=${CHANGESET_MONITORING_INTERVAL}
+
+COPY service /etc/service/rabbitmq/run
+COPY generic-consumer-producer.sh command-consumer-event-producer.sh event-consumer-command-producer.sh /usr/local/bin/
+
+RUN chmod +x /etc/my_init.d/56_create_bootstrap_cron.sh \
+    && chmod +x /etc/service/rabbitmq/run \
+    && mkdir -p /var/local/src/rabbitmq \
+    && rm -rf /etc/service/filebeat \
+    && chmod +x /usr/local/bin/generic-consumer-producer.sh /usr/local/bin/command-consumer-event-producer.sh /usr/local/bin/event-consumer-command-producer.sh
+
+# ADD changesets/* /var/local/src/rabbitmq/
+
+# RUN chmod +x /var/local/src/rabbitmq/*.sh
+
+VOLUME ["/backup/rabbitmq/data/mnesia", "/backup/rabbitmq/changesets"]
+
+@include("copy-metadata")
+@include("symlinks")
+@include("instructions")
+# vim: syntax=sh ts=2 sw=2 sts=4 sr noet

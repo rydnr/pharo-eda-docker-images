@@ -1,0 +1,28 @@
+# PharoEDA MongoDB
+
+PharoEDA MongoDB image.
+
+This image requires the following environment variables to run:
+
+- ADMIN_USER_PASSWORD: The password of the admin user.
+- BACKUP_USER_PASSWORD: The password of the backup user.
+
+# Customization
+
+The following parameters can be overridden if necessary:
+- ADMIN_USER_NAME: The name of the admin user. Defaults to "${ADMIN_USER_NAME}".
+- BACKUP_USER_NAME: The name of the backup user. Defaults to "${BACKUP_USER_NAME}".
+- AUTHENTICATION_MECHANISM: The authentication mechanism. Defaults to "${AUTHENTICATION_MECHANISM}".
+- ENABLE_FREE_MONITORING: Whether to enable free monitoring. Defaults to ${ENABLE_FREE_MONITORING}.
+
+# Usage
+
+## Examples
+
+- docker run -d --rm -p 27017:27017 \
+   --name ${IMAGE} \
+  -v [backup-folder]:/backup/mongodb/db \
+  -v [changesets-folder]:/backup/mongodb/changesets \
+  -e ADMIN_USER_PASSWORD=s3cr3t \
+  -e BACKUP_USER_PASSWORD=s3cr3t \
+  ${NAMESPACE}/${IMAGE}:${TAG}

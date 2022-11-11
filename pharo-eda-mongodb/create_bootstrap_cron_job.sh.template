@@ -1,0 +1,50 @@
+#!/usr/bin/env dry-wit
+# (c) 2017-today Automated Computing Machinery, S.L.
+#
+#    This file is part of pharo-eda-docker-images.
+#
+#    pharo-eda-docker-images is free software: you can redistribute it and/or
+#    modify it under the terms of the GNU General Public License as published
+#    by the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    pharo-eda-docker-images is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with pharo-eda-docker-images.
+#    If not, see <http://www.gnu.org/licenses/>.
+#
+# mod: pharo-eda-mongodb/create_bootstrap_cron_job.sh
+# api: public
+# txt: Creates a cron job to bootstrap the MongoDB database.
+
+# fun: main
+# api: public
+# txt: Creates a cron job to bootstrap the MongoDB database.
+# txt: Returns 0/TRUE always.
+# use: main;
+function main() {
+
+  if fileExists /usr/local/bin/${IMAGE}-bootstrap.sh; then
+    cat <<EOF >/etc/cron.d/${IMAGE}-bootstrap
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/src/dry-wit/src
+ADMIN_USER_PASSWORD=${ADMIN_USER_PASSWORD}
+BACKUP_USER_PASSWORD=${BACKUP_USER_PASSWORD}
+
+*/1 * * * * root /usr/local/bin/${IMAGE}-bootstrap.sh -vv &> /var/log/${IMAGE}-bootstrap.log && rm -f /etc/cron.d/${IMAGE}-bootstrap
+EOF
+  fi
+}
+
+# Script metadata
+setScriptDescription "Creates a cron job to bootstrap the MongoDB database."
+
+# env: ADMIN_USER_PASSWORD: The password of the admin user.
+defineEnvVar ADMIN_USER_PASSWORD MANDATORY "The password of the admin user"
+# env: BACKUP_USER_PASSWORD: The password of the backup user.
+defineEnvVar BACKUP_USER_PASSWORD MANDATORY "The password of the backup user"
+# vim: syntax=sh ts=2 sw=2 sts=4 sr noet
