@@ -1,11 +1,10 @@
-# Contestia's RabbitMQ
+# PharoEDA's RabbitMQ
 
 Runs a RabbitMQ instance as a Docker container.
 
 This image requires account passwords to be provided at runtime, via environment variables.
 - ADMIN_USER_PASSWORD
 - MONITORING_USER_PASSWORD
-- FORMSERVICE_USER_PASSWORD
 
 ## Examples:
 
@@ -13,7 +12,6 @@ This image requires account passwords to be provided at runtime, via environment
 > docker run -d -p [port]:5672 -p [port]:15672 --name mq \
     -e ADMIN_USER_PASSWORD=".." \
     -e MONITORING_USER_PASSWORD=".." \
-    -e FORMSERVICE_USER_PASSWORD=".." \
     -v [changeset-folder]:/backup/rabbitmq/changeset \
     ${REGISTRY}/${NAMESPACE}/${IMAGE}:${TAG}
 
@@ -22,7 +20,6 @@ This image requires account passwords to be provided at runtime, via environment
     -e NODENAME="rabbit@cluster1" \
     -e ADMIN_USER_PASSWORD=".." \
     -e MONITORING_USER_PASSWORD=".." \
-    -e FORMSERVICE_USER_PASSWORD=".." \
     -v [changeset-folder]:/backup/rabbitmq/changeset \
     ${REGISTRY}/${NAMESPACE}/${IMAGE}:${TAG}
 # vim: syntax=sh ts=2 sw=2 sts=4 sr noet
