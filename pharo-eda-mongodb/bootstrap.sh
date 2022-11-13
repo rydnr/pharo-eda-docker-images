@@ -49,8 +49,8 @@ function main() {
         "${BACKUP_USER_PASSWORD}" \
         ${START_TIMEOUT} \
         ${START_CHECK_INTERVAL} \
-        "${BOOTSTRAP_FILE}" \
-        "${LOCK_FILE}"
+        "${LOCK_FILE}" \
+        "${BOOTSTRAP_FILE}"
 }
 
 # fun: mongodb_patch

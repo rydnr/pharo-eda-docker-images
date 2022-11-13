@@ -26,3 +26,7 @@ The following parameters can be overridden if necessary:
   -e ADMIN_USER_PASSWORD=s3cr3t \
   -e BACKUP_USER_PASSWORD=s3cr3t \
   ${NAMESPACE}/${IMAGE}:${TAG}
+
+## Warnings
+
+vm.max_map_count is too low
