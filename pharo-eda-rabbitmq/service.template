@@ -70,8 +70,6 @@ function enable_builtin_changesets() {
   rsync -avz /var/local/src/rabbitmq/* "${CHANGESET_MONITORING_FOLDER}"/
 
   cat <<EOF >>/usr/local/sbin/pending_rabbitmq_scripts.inc.sh
-# env: FORMSERVICE_USER_PASSWORD: The password of the FormsService user.
-defineEnvVar FORMSERVICE_USER_PASSWORD MANDATORY "The password of the FormService user" "${FORMSERVICE_USER_PASSWORD}";
 # vim: syntax=sh ts=2 sw=2 sts=4 sr noet
 EOF
 }

@@ -11,7 +11,7 @@ ENV RABBITMQ_NODENAME=${IMAGE} \
     ADMIN_USER_PASSWORD="" \
     MONITORING_USER_PASSWORD="" \
     CHANGESET_MONITORING_INTERVAL=${CHANGESET_MONITORING_INTERVAL} \
-    RABBITMQ_NODENAME_PREFIX=pharoeda
+    RABBITMQ_NODENAME_PREFIX=pharo-eda-rabbitmq
 
 COPY service /etc/service/rabbitmq/run
 COPY generic-consumer-producer.sh command-consumer-event-producer.sh event-consumer-command-producer.sh /usr/local/bin/

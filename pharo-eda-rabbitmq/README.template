@@ -12,7 +12,7 @@ This image requires account passwords to be provided at runtime, via environment
 > docker run -d -p [port]:5672 -p [port]:15672 --name mq \
     -e ADMIN_USER_PASSWORD=".." \
     -e MONITORING_USER_PASSWORD=".." \
-    -v [changeset-folder]:/backup/rabbitmq/changeset \
+    -v [changesets-folder]:/backup/rabbitmq/changesets \
     ${REGISTRY}/${NAMESPACE}/${IMAGE}:${TAG}
 
 - Run RabbitMQ defining an explicit nodename:
@@ -20,6 +20,27 @@ This image requires account passwords to be provided at runtime, via environment
     -e NODENAME="rabbit@cluster1" \
     -e ADMIN_USER_PASSWORD=".." \
     -e MONITORING_USER_PASSWORD=".." \
-    -v [changeset-folder]:/backup/rabbitmq/changeset \
+    -v [changesets-folder]:/backup/rabbitmq/changesets \
     ${REGISTRY}/${NAMESPACE}/${IMAGE}:${TAG}
+
+As part of a Docker compose setup:
+
+services:
+  rabbitmq:
+    image: acmsl-phusion/pharo-eda-rabbitmq:latest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - front-tier
+      - back-tier
+    environment:
+      - ADMIN_USER_PASSWORD:secret
+      - MONITORING_USER_PASSWORD:secret
+    volumes:
+      - rabbitmq-mnesia:/backup/rabbitmq/mnesia
+      - type: bind
+        source: rabbitmq/changesets
+        target: /backup/rabbitmq/changesets
+
 # vim: syntax=sh ts=2 sw=2 sts=4 sr noet
